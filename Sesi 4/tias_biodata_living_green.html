@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tias Tono Taufik - 3D Portfolio</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <!-- Google Fonts: Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: '#10b981', /* Emerald 500 (Hijau) */
+                        brandHover: '#059669', /* Emerald 600 (Hijau Gelap) */
+                    },
+                    fontFamily: {
+                        poppins: ['Poppins', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+            background-color: #030f08; /* Dark green base */
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+
+        /* 3D Canvas Background fixed behind everything */
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1; 
+            pointer-events: none; /* Allows scrolling on the document */
+        }
+
+        /* Glassmorphism Styles */
+        .glass {
+            background: rgba(10, 35, 20, 0.3);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: transform 0.3s ease, border-color 0.3s ease, background 0.3s ease;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(16, 185, 129, 0.4);
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2); 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(16, 185, 129, 0.5); 
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(16, 185, 129, 0.8); 
+        }
+
+        /* Hide scrollbar for carousel but allow scrolling */
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Image hover effect */
+        .project-img-wrapper {
+            overflow: hidden;
+            border-radius: 0.5rem 0.5rem 0 0;
+        }
+        .project-img-wrapper img {
+            transition: transform 0.5s ease;
+        }
+        .glass-card:hover .project-img-wrapper img {
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- 3D Background Layer -->
+    <div id="canvas-container"></div>
+
+    <!-- Main Content Layer (Scrollable) -->
+    <div class="relative z-10 w-full min-h-screen flex flex-col">
+        
+        <!-- Navbar -->
+        <nav class="fixed top-0 w-full glass z-50 py-4 px-6 md:px-12 flex justify-between items-center">
+            <div class="text-2xl font-extrabold uppercase tracking-widest text-white">
+                Tias<span class="text-brand">Tono</span>
+            </div>
+            <div class="hidden md:flex space-x-8 text-sm font-medium text-emerald-100/80">
+                <a href="#hero" class="hover:text-brand transition-colors">Home</a>
+                <a href="#about" class="hover:text-brand transition-colors">About Me</a>
+                <a href="#projects" class="hover:text-brand transition-colors">Projects</a>
+            </div>
+            <a href="#" class="px-5 py-2 bg-brand hover:bg-brandHover text-white font-medium rounded-md transition-all shadow-[0_0_15px_rgba(16,185,129,0.3)] hover:shadow-[0_0_25px_rgba(16,185,129,0.6)]">
+                Download CV
+            </a>
+        </nav>
+
+        <!-- Hero Section -->
+        <header id="hero" class="min-h-screen flex items-center justify-center px-6 pt-20">
+            <div class="glass max-w-4xl w-full rounded-3xl p-8 md:p-16 flex flex-col md:flex-row items-center gap-10">
+                <!-- Text Content -->
+                <div class="flex-1 text-center md:text-left">
+                    <p class="text-emerald-300 font-medium tracking-wider mb-2 text-sm uppercase">Hi, I am</p>
+                    <h1 class="text-4xl md:text-5xl lg:text-6xl font-extrabold mb-4 leading-tight">
+                        Tias Tono <span class="text-brand block md:inline mt-2 md:mt-0">Taufik</span>
+                    </h1>
+                    <h2 class="text-xl md:text-2xl font-light text-emerald-100 mb-6">
+                        Fullstack Web Developer
+                    </h2>
+                    <p class="text-emerald-100/70 mb-8 max-w-md mx-auto md:mx-0 leading-relaxed">
+                        Membantu bisnis dan startup membangun aplikasi web yang cepat, responsif, dan siap berkembang (scalable).
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
+                        <button class="px-8 py-3 bg-brand hover:bg-brandHover text-white font-semibold rounded-lg transition-all shadow-lg hover:-translate-y-1">
+                            Hire Me
+                        </button>
+                        <div class="flex items-center justify-center space-x-4 px-4">
+                            <a href="#" class="w-10 h-10 rounded-full glass-card flex items-center justify-center text-emerald-100 hover:text-brand transition-colors"><i class="bi bi-github"></i></a>
+                            <a href="#" class="w-10 h-10 rounded-full glass-card flex items-center justify-center text-emerald-100 hover:text-brand transition-colors"><i class="bi bi-linkedin"></i></a>
+                            <a href="#" class="w-10 h-10 rounded-full glass-card flex items-center justify-center text-emerald-100 hover:text-brand transition-colors"><i class="bi bi-instagram"></i></a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Avatar Placeholder -->
+                <div class="w-64 h-64 md:w-80 md:h-80 rounded-full overflow-hidden border-4 border-brand/50 shadow-[0_0_30px_rgba(16,185,129,0.3)] shrink-0 bg-emerald-900/50 flex items-center justify-center">
+                    <img src="PAS Foto.jpeg" alt="Tias Tono Taufik" class="w-full h-full object-cover object-top">
+                </div>
+            </div>
+        </header>
+
+        <!-- About Section -->
+        <section id="about" class="py-20 px-6 max-w-6xl mx-auto w-full">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">About <span class="text-brand">Me</span></h2>
+                <div class="w-20 h-1 bg-brand mx-auto rounded-full mb-6"></div>
+                <p class="text-emerald-100/70 max-w-2xl mx-auto">
+                    Saya berfokus pada penulisan kode yang bersih (clean code), performa optimal, serta pengalaman pengguna yang nyaman untuk berbagai platform digital.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Info Cards -->
+                <div class="glass-card p-6 rounded-2xl flex items-start gap-4">
+                    <i class="bi bi-person-fill text-3xl text-brand"></i>
+                    <div>
+                        <h3 class="text-emerald-300 text-sm font-semibold uppercase tracking-wider mb-1">Full Name</h3>
+                        <p class="font-medium text-lg text-white">Tias Tono Taufik</p>
+                    </div>
+                </div>
+                
+                <div class="glass-card p-6 rounded-2xl flex items-start gap-4">
+                    <i class="bi bi-mortarboard-fill text-3xl text-brand"></i>
+                    <div>
+                        <h3 class="text-emerald-300 text-sm font-semibold uppercase tracking-wider mb-1">Education</h3>
+                        <p class="font-medium text-lg text-white">S1 Arsitektur</p>
+                    </div>
+                </div>
+
+                <div class="glass-card p-6 rounded-2xl flex items-start gap-4">
+                    <i class="bi bi-briefcase-fill text-3xl text-brand"></i>
+                    <div>
+                        <h3 class="text-emerald-300 text-sm font-semibold uppercase tracking-wider mb-1">Pekerjaan</h3>
+                        <p class="font-medium text-lg text-white">Freelancer</p>
+                    </div>
+                </div>
+
+                <div class="glass-card p-6 rounded-2xl flex items-start gap-4">
+                    <i class="bi bi-envelope-fill text-3xl text-brand"></i>
+                    <div>
+                        <h3 class="text-emerald-300 text-sm font-semibold uppercase tracking-wider mb-1">Contact</h3>
+                        <p class="font-medium text-lg text-white">topiktono@gmail.com</p>
+                    </div>
+                </div>
+
+                <div class="glass-card p-6 rounded-2xl flex items-start gap-4">
+                    <i class="bi bi-controller text-3xl text-brand"></i>
+                    <div>
+                        <h3 class="text-emerald-300 text-sm font-semibold uppercase tracking-wider mb-1">Hobi</h3>
+                        <p class="font-medium text-lg text-white">Olahraga, Nonton Film</p>
+                    </div>
+                </div>
+
+                <div class="glass-card p-6 rounded-2xl flex items-start gap-4">
+                    <i class="bi bi-geo-alt-fill text-3xl text-brand"></i>
+                    <div>
+                        <h3 class="text-emerald-300 text-sm font-semibold uppercase tracking-wider mb-1">Alamat</h3>
+                        <p class="font-medium text-sm text-white leading-relaxed">Bogoran RT 04, Trirenggo, Bantul, DIY</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Projects Section -->
+        <section id="projects" class="py-20 px-6 max-w-6xl mx-auto w-full mb-20">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">My <span class="text-brand">Projects</span></h2>
+                <div class="w-20 h-1 bg-brand mx-auto rounded-full mb-6"></div>
+                <p class="text-emerald-100/70 max-w-2xl mx-auto mb-8">
+                    Karya-karya terbaik saya dalam membangun solusi web dan sistem untuk berbagai studi kasus bisnis. Klik gambar untuk melihat detail.
+                </p>
+            </div>
+
+            <!-- Carousel Wrapper -->
+            <div class="relative w-full group">
+                <!-- Carousel Container (Diperbarui gap dan stylingnya) -->
+                <div id="project-carousel" class="flex overflow-x-auto snap-x snap-mandatory hide-scrollbar gap-0 pb-8 pt-4">
+                    
+                    <!-- Project 1 -->
+                    <div class="snap-center shrink-0 w-full px-4">
+                        <div class="glass-card rounded-2xl flex flex-col h-full cursor-pointer group/card max-w-2xl mx-auto">
+                            <div class="project-img-wrapper h-56 md:h-72 w-full bg-emerald-900/50 relative" onclick="openModal('Frontend.jpg')">
+                                <div class="absolute inset-0 flex items-center justify-center text-white bg-black/40 opacity-0 group-hover/card:opacity-100 transition-all duration-300 z-10">
+                                     <i class="bi bi-arrows-fullscreen text-3xl transform scale-50 group-hover/card:scale-100 transition-transform duration-300"></i>
+                                </div>
+                                <img src="Frontend.jpg" alt="E-Commerce" class="w-full h-full object-cover">
+                            </div>
+                            <div class="p-6 md:p-8 flex-1 flex flex-col">
+                                <span class="text-brand text-xs font-bold uppercase tracking-wider mb-2">Web Design</span>
+                                <h3 class="text-2xl font-bold mb-3 text-white">Situs E-Commerce Pakaian</h3>
+                                <p class="text-emerald-100/60 text-base flex-1 leading-relaxed">
+                                    Desain UX modern dan responsif untuk toko online skala penuh dengan integrasi keranjang belanja.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Project 2 -->
+                    <div class="snap-center shrink-0 w-full px-4">
+                        <div class="glass-card rounded-2xl flex flex-col h-full cursor-pointer group/card max-w-2xl mx-auto">
+                            <div class="project-img-wrapper h-56 md:h-72 w-full bg-emerald-900/50 relative" onclick="openModal('Data Api.jpg')">
+                                <div class="absolute inset-0 flex items-center justify-center text-white bg-black/40 opacity-0 group-hover/card:opacity-100 transition-all duration-300 z-10">
+                                     <i class="bi bi-arrows-fullscreen text-3xl transform scale-50 group-hover/card:scale-100 transition-transform duration-300"></i>
+                                </div>
+                                <img src="Data Api.jpg" alt="Dashboard" class="w-full h-full object-cover">
+                            </div>
+                            <div class="p-6 md:p-8 flex-1 flex flex-col">
+                                <span class="text-brand text-xs font-bold uppercase tracking-wider mb-2">Web App</span>
+                                <h3 class="text-2xl font-bold mb-3 text-white">Dashboard Analitik & CRM</h3>
+                                <p class="text-emerald-100/60 text-base flex-1 leading-relaxed">
+                                    Integrasi data kompleks, manajemen hubungan pelanggan, dan visualisasi grafik real-time.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Project 3 -->
+                    <div class="snap-center shrink-0 w-full px-4">
+                        <div class="glass-card rounded-2xl flex flex-col h-full cursor-pointer group/card max-w-2xl mx-auto">
+                            <div class="project-img-wrapper h-64 md:h-80 w-full bg-emerald-900/50 relative" onclick="openModal('Backend.jpg')">
+                                 <div class="absolute inset-0 flex items-center justify-center text-white bg-black/40 opacity-0 group-hover/card:opacity-100 transition-all duration-300 z-10">
+                                     <i class="bi bi-arrows-fullscreen text-3xl transform scale-50 group-hover/card:scale-100 transition-transform duration-300"></i>
+                                </div>
+                                <img src="Backend.jpg" alt="API Platform" class="w-full h-full object-cover">
+                            </div>
+                            <div class="p-6 md:p-8 flex-1 flex flex-col">
+                                <span class="text-brand text-xs font-bold uppercase tracking-wider mb-2">Backend</span>
+                                <h3 class="text-2xl font-bold mb-3 text-white">Platform API Microservices</h3>
+                                <p class="text-emerald-100/60 text-base flex-1 leading-relaxed">
+                                    Pengembangan arsitektur backend berbasis microservices yang aman, andal, dan dapat ditingkatkan.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Carousel Indicators -->
+                <div id="carousel-indicators" class="flex justify-center items-center gap-3 mt-4">
+                    <button onclick="goToSlide(0)" class="w-3 h-3 rounded-full bg-brand scale-125 transition-all shadow-[0_0_10px_rgba(16,185,129,0.5)]" aria-label="Slide 1"></button>
+                    <button onclick="goToSlide(1)" class="w-3 h-3 rounded-full bg-emerald-100/30 hover:bg-brand/60 transition-all" aria-label="Slide 2"></button>
+                    <button onclick="goToSlide(2)" class="w-3 h-3 rounded-full bg-emerald-100/30 hover:bg-brand/60 transition-all" aria-label="Slide 3"></button>
+                </div>
+
+                <!-- Carousel Controls -->
+                <div class="flex justify-center gap-4 mt-6">
+                    <button onclick="scrollCarousel(-1)" class="w-12 h-12 rounded-full glass-card flex items-center justify-center text-brand hover:bg-brand hover:text-white transition-all shadow-lg" aria-label="Previous">
+                        <i class="bi bi-chevron-left text-xl"></i>
+                    </button>
+                    <button onclick="scrollCarousel(1)" class="w-12 h-12 rounded-full glass-card flex items-center justify-center text-brand hover:bg-brand hover:text-white transition-all shadow-lg" aria-label="Next">
+                        <i class="bi bi-chevron-right text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Footer -->
+        <footer class="mt-auto py-6 text-center border-t border-white/10 glass">
+            <p class="text-emerald-100/50 text-sm">&copy; 2026 Tias Tono Taufik. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <!-- Modal Component -->
+    <div id="imageModal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/80 backdrop-blur-md opacity-0 transition-opacity duration-300" onclick="closeModal()">
+        <button onclick="closeModal()" class="absolute top-6 right-6 text-white/70 hover:text-brand text-4xl transition-colors z-50">
+            <i class="bi bi-x"></i>
+        </button>
+        <img id="modalImage" src="" alt="Project Preview" class="max-w-[90%] max-h-[90vh] rounded-xl shadow-2xl transform scale-95 transition-transform duration-300 object-contain" onclick="event.stopPropagation()">
+    </div>
+
+    <!-- Script Kustom untuk Interaksi UI dan Three.js -->
+    <script>
+        // --- Interaksi Modal & Carousel ---
+        function openModal(imgSrc) {
+            const modal = document.getElementById('imageModal');
+            const modalImg = document.getElementById('modalImage');
+            modalImg.src = imgSrc;
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            
+            // Trigger reflow untuk memastikan transisi CSS berjalan
+            void modal.offsetWidth; 
+            
+            modal.classList.remove('opacity-0');
+            modalImg.classList.remove('scale-95');
+            modalImg.classList.add('scale-100');
+            
+            // Hentikan scroll di background saat modal terbuka
+            document.body.style.overflow = 'hidden'; 
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('imageModal');
+            const modalImg = document.getElementById('modalImage');
+            
+            modal.classList.add('opacity-0');
+            modalImg.classList.remove('scale-100');
+            modalImg.classList.add('scale-95');
+            
+            // Tunggu transisi memudar selesai sebelum menyembunyikan div sepenuhnya
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+                document.body.style.overflow = ''; // Kembalikan scroll background
+            }, 300); 
+        }
+
+        let currentSlide = 0;
+        const slidesCount = 3;
+        let autoSlideInterval;
+
+        // Update tampilan titik indikator
+        function updateIndicators(index) {
+            currentSlide = index;
+            const indicators = document.querySelectorAll('#carousel-indicators button');
+            indicators.forEach((ind, i) => {
+                if (i === index) {
+                    ind.className = 'w-3 h-3 rounded-full bg-brand scale-125 transition-all shadow-[0_0_10px_rgba(16,185,129,0.5)]';
+                } else {
+                    ind.className = 'w-3 h-3 rounded-full bg-emerald-100/30 hover:bg-brand/60 transition-all';
+                }
+            });
+        }
+
+        // Memantau scroll manual (swipe di HP) agar indikator tetap sinkron
+        function setupCarouselObserver() {
+            const carousel = document.getElementById('project-carousel');
+            const slides = carousel.querySelectorAll('.snap-center');
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const index = Array.from(slides).indexOf(entry.target);
+                        updateIndicators(index);
+                    }
+                });
+            }, {
+                root: carousel,
+                threshold: 0.5 // Trigger saat slide terlihat minimal 50%
+            });
+
+            slides.forEach(slide => observer.observe(slide));
+        }
+
+        // Lompat ke slide tertentu (dipanggil oleh indikator)
+        function goToSlide(index) {
+            const carousel = document.getElementById('project-carousel');
+            const scrollAmount = carousel.clientWidth;
+            carousel.scrollTo({ left: index * scrollAmount, behavior: 'smooth' });
+            resetAutoSlide(); // Reset timer agar tidak double-scroll
+        }
+
+        // Geser ke Kiri/Kanan dengan logika Loop
+        function scrollCarousel(direction) {
+            let nextIndex = currentSlide + direction;
+            
+            // Logika Loop
+            if (nextIndex >= slidesCount) {
+                nextIndex = 0; // Balik ke awal
+            } else if (nextIndex < 0) {
+                nextIndex = slidesCount - 1; // Balik ke akhir
+            }
+            
+            goToSlide(nextIndex);
+        }
+
+        // Memulai timer auto-slide (tiap 4 detik)
+        function startAutoSlide() {
+            autoSlideInterval = setInterval(() => {
+                let nextIndex = currentSlide + 1;
+                if (nextIndex >= slidesCount) nextIndex = 0;
+                
+                const carousel = document.getElementById('project-carousel');
+                const scrollAmount = carousel.clientWidth;
+                carousel.scrollTo({ left: nextIndex * scrollAmount, behavior: 'smooth' });
+            }, 4000); 
+        }
+
+        // Mengatur ulang timer ketika pengguna berinteraksi manual
+        function resetAutoSlide() {
+            clearInterval(autoSlideInterval);
+            startAutoSlide();
+        }
+
+        // --- Variabel global Three.js ---
+        let scene, camera, renderer;
+        let terrain, particles;
+        let mouseX = 0, mouseY = 0;
+        
+        // Konstanta untuk parallax
+        let targetX = 0, targetY = 0;
+        let windowHalfX = window.innerWidth / 2;
+        let windowHalfY = window.innerHeight / 2;
+
+        // Inisialisasi saat halaman dimuat
+        window.onload = function() {
+            initThreeJS();
+            animateLoop();
+            
+            // Inisialisasi Carousel
+            setupCarouselObserver();
+            startAutoSlide();
+        };
+
+        function initThreeJS() {
+            const container = document.getElementById('canvas-container');
+
+            // 1. Scene Setup
+            scene = new THREE.Scene();
+            // Efek kabut (Fog) untuk menyamarkan ujung geometri dengan latar belakang
+            scene.fog = new THREE.FogExp2(0x030f08, 0.02);
+
+            // 2. Camera Setup
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 5, 25);
+
+            // 3. Renderer Setup
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Optimasi performa
+            renderer.setClearColor(0x030f08, 1);
+            container.appendChild(renderer.domElement);
+
+            // 4. Lights (Pencahayaan)
+            const ambientLight = new THREE.AmbientLight(0x0a2314, 2); // Hijau sangat gelap
+            scene.add(ambientLight);
+
+            const directionalLight = new THREE.DirectionalLight(0x50c878, 1); // Cahaya emerald utama
+            directionalLight.position.set(10, 20, 10);
+            scene.add(directionalLight);
+            
+            // Tambahkan cahaya aksen hijau selaras (Emerald)
+            const emeraldLight = new THREE.PointLight(0x10b981, 1.5, 40);
+            emeraldLight.position.set(0, -5, 5);
+            scene.add(emeraldLight);
+
+            // 5. Terrain (Geometri Bergelombang)
+            const geometry = new THREE.PlaneGeometry(120, 100, 60, 60);
+            geometry.rotateX(-Math.PI / 2); // Ratakan ke lantai
+
+            const material = new THREE.MeshStandardMaterial({ 
+                color: 0x061c10, // Hijau tua pekat
+                roughness: 0.9,
+                metalness: 0.1,
+                wireframe: false,
+                flatShading: true // Memberikan efek low-poly/organik
+            });
+
+            terrain = new THREE.Mesh(geometry, material);
+            // Posisikan terrain di bawah agar tidak menutupi UI
+            terrain.position.y = -8;
+            scene.add(terrain);
+
+            // 6. Particles (Kunang-kunang/Serbuk Sari)
+            const particlesGeometry = new THREE.BufferGeometry();
+            const particlesCount = 700; // Jumlah partikel
+            
+            // Array untuk posisi dan warna unik tiap partikel
+            const posArray = new Float32Array(particlesCount * 3);
+            const colorsArray = new Float32Array(particlesCount * 3);
+
+            // Warna dasar hijau muda dan hijau zamrud
+            const colorLightGreen = new THREE.Color(0x88ffa5);
+            const colorEmerald = new THREE.Color(0x10b981);
+            let tempColor = new THREE.Color();
+
+            for(let i = 0; i < particlesCount * 3; i+=3) {
+                // Posisi Acak (X, Y, Z)
+                posArray[i] = (Math.random() - 0.5) * 80;     // X
+                posArray[i+1] = (Math.random() - 0.5) * 40;   // Y
+                posArray[i+2] = (Math.random() - 0.5) * 80;   // Z
+
+                // 85% Hijau Muda, 15% Hijau Zamrud
+                if (Math.random() > 0.15) {
+                    tempColor.copy(colorLightGreen);
+                } else {
+                    tempColor.copy(colorEmerald);
+                }
+
+                colorsArray[i] = tempColor.r;
+                colorsArray[i+1] = tempColor.g;
+                colorsArray[i+2] = tempColor.b;
+            }
+            
+            particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+            particlesGeometry.setAttribute('color', new THREE.BufferAttribute(colorsArray, 3));
+
+            const particlesMaterial = new THREE.PointsMaterial({
+                size: 0.12,
+                vertexColors: true, // Gunakan array warna di atas
+                transparent: true,
+                opacity: 0.7,
+                blending: THREE.AdditiveBlending // Efek glow/berpendar
+            });
+
+            particles = new THREE.Points(particlesGeometry, particlesMaterial);
+            scene.add(particles);
+
+            // 7. Event Listeners untuk Interaktivitas
+            document.addEventListener('mousemove', onDocumentMouseMove);
+            window.addEventListener('resize', onWindowResize);
+        }
+
+        function onWindowResize() {
+            windowHalfX = window.innerWidth / 2;
+            windowHalfY = window.innerHeight / 2;
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function onDocumentMouseMove(event) {
+            // Normalisasi posisi mouse untuk efek parallax 3D
+            mouseX = (event.clientX - windowHalfX) * 0.0015;
+            mouseY = (event.clientY - windowHalfY) * 0.0015;
+        }
+
+        function animateLoop() {
+            requestAnimationFrame(animateLoop);
+            
+            const time = Date.now() * 0.0004;
+
+            // a. Animasikan Terrain (Gelombang Organik)
+            if(terrain) {
+                const positions = terrain.geometry.attributes.position;
+                for (let i = 0; i < positions.count; i++) {
+                    const x = positions.getX(i);
+                    const z = positions.getZ(i);
+                    
+                    // Rumus gelombang menggunakan sin/cos
+                    const y = Math.sin(x * 0.2 + time) * 1.5 + 
+                              Math.cos(z * 0.15 + time) * 1.0 + 
+                              Math.sin((x+z) * 0.08 - time) * 0.8;
+                    
+                    positions.setY(i, y);
+                }
+                terrain.geometry.attributes.position.needsUpdate = true;
+                terrain.geometry.computeVertexNormals(); // Update pencahayaan bentuk
+            }
+
+            // b. Animasikan Partikel (Melayang Naik & Bergerak Pelan)
+            if(particles) {
+                const pPositions = particles.geometry.attributes.position;
+                for (let i = 0; i < pPositions.count; i++) {
+                    let y = pPositions.getY(i);
+                    y += 0.015; // Kecepatan melayang naik
+                    
+                    // Reset partikel ke bawah jika sudah terlalu tinggi
+                    if (y > 20) {
+                        y = -20;
+                        pPositions.setX(i, (Math.random() - 0.5) * 80);
+                        pPositions.setZ(i, (Math.random() - 0.5) * 80);
+                    }
+                    pPositions.setY(i, y);
+                }
+                particles.geometry.attributes.position.needsUpdate = true;
+                
+                // Rotasi kumpulan partikel secara keseluruhan perlahan-lahan
+                particles.rotation.y = time * 0.05;
+            }
+
+            // c. Kamera Parallax (Mengikuti Mouse)
+            targetX = mouseX * 5;
+            targetY = mouseY * 3 + 5; // Tetap jaga ketinggian dasar kamera
+            
+            // Pergerakan kamera dibuat halus (lerp)
+            camera.position.x += (targetX - camera.position.x) * 0.05;
+            camera.position.y += (targetY - camera.position.y) * 0.05;
+            camera.lookAt(0, 0, 0);
+
+            // d. Render ke layar
+            renderer.render(scene, camera);
+        }
+    </script>
+</body>
+</html>
